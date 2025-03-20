@@ -1,0 +1,13 @@
+{
+    "cn": "domain.com",
+    "expires": "2025-07-14 20:33:45 UTC",
+    "issued": "2025-04-15 20:33:46 UTC",
+    "issuer": "Let's Encrypt",
+    "sans": [
+      "domain.com",
+      "www.domain.com"
+    ],
+    "cert": "-----BEGIN CERTIFICATE-----\n\n-----END CERTIFICATE-----\n",
+    "key": "-----BEGIN PRIVATE KEY-----\n\n-----END PRIVATE KEY-----\n",
+    "forceHttps": false
+  }

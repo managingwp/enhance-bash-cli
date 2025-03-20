@@ -1,0 +1,29 @@
+{
+    "items": [
+      {
+        "id": "0ffe8f08-de63-4d3f-a34d-137eea623d77",
+        "orgId": "291a910d-4db4-48b2-bf42-df6f318ea68e",
+        "domain": "domain.com",
+        "dkim": false,
+        "spf": false,
+        "updatedAt": "2025-04-15T17:28:38.224166Z",
+        "createdAt": "2025-04-15T17:28:38.224166Z",
+        "localRemote": "local",
+        "cloudflareTokenId": null,
+        "cloudflareStatus": "Disconnected"
+      },
+      {
+        "id": "b850c050-bba7-4c4e-b037-bff7bee33abb",
+        "orgId": "291a910d-4db4-48b2-bf42-df6f318ea68e",
+        "domain": "domain2.com",
+        "dkim": false,
+        "spf": false,
+        "updatedAt": "2025-04-15T17:41:38.540574Z",
+        "createdAt": "2025-04-15T17:41:38.540574Z",
+        "localRemote": "local",
+        "cloudflareTokenId": null,
+        "cloudflareStatus": "Disconnected"
+      }
+    ],
+    "total": 46
+  }

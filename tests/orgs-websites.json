@@ -1,0 +1,79 @@
+{
+    "items": [
+        {
+            "id": "de32806a-8a9a-4c40-bd8f-40a88ffdd4d8",
+            "domain": {
+                "id": "2e7971a3-f01c-475d-9d1a-2d052eaaa8fd",
+                "domain": "test.com",
+                "documentRoot": "public_html",
+                "kind": "primary",
+                "cloudflareStatus": "Disconnected"
+            },
+            "aliases": [
+                {
+                    "id": "43147d4a-604f-454f-b327-3a169c5f2540",
+                    "domain": "test-com-xord.site.dev",
+                    "documentRoot": "public_html",
+                    "kind": "preview",
+                    "cloudflareStatus": "Disconnected"
+                }
+            ],
+            "subdomains": [],
+            "subscriptionId": 3,
+            "planId": 3,
+            "plan": "Clients Normal",
+            "status": "active",
+            "colorCode": "3F76C3",
+            "tags": [],
+            "size": 1430840428,
+            "orgId": "291a910d-4db4-48b2-bf42-df6f318ea68e",
+            "kind": "normal",
+            "createdAt": "2025-04-15T17:43:13.501175Z",
+            "appServerId": "818a9337-a2bb-4d7d-b403-eaddPe4c89f78",
+            "backupServerId": "450e01a1-9589-45e0-a316-5d9371f90f69",
+            "dbServerId": "818a9337-a2bb-4d7d-b403-eadde4c89f78",
+            "appServerName": "server",
+            "dbServerName": "server",
+            "backupServerName": "bkpsrv01",
+            "phpVersion": "php80"
+        },
+        {
+            "id": "434f4c1d-c732-4beb-9a7f-0d0a8314bb4f",
+            "domain": {
+                "id": "16638954-99f8-46b5-bddb-d27e4510c453",
+                "domain": "domain2.com",
+                "documentRoot": "public_html",
+                "kind": "primary",
+                "cloudflareStatus": "Disconnected"
+            },
+            "aliases": [
+                {
+                    "id": "af4a0417-1634-4978-b182-801c90009473",
+                    "domain": "domain2-com-iff2.site.dev",
+                    "documentRoot": "public_html",
+                    "kind": "preview",
+                    "cloudflareStatus": "Disconnected"
+                }
+            ],
+            "subdomains": [],
+            "subscriptionId": 3,
+            "planId": 3,
+            "plan": "Clients Normal",
+            "status": "active",
+            "colorCode": "4E4CEA",
+            "tags": [],
+            "size": 285502441,
+            "orgId": "291a910d-4db4-48b2-bf42-df6f318ea68e",
+            "kind": "normal",
+            "createdAt": "2025-04-15T18:59:39.731911Z",
+            "appServerId": "818a9337-a2bb-4d7d-b403-eadde4c89f78",
+            "backupServerId": "450e01a1-9589-45e0-a316-5d9371f90f69",
+            "dbServerId": "818a9337-a2bb-4d7d-b403-eadde4c89f78",
+            "appServerName": "server",
+            "dbServerName": "server",
+            "backupServerName": "bkpsrv01",
+            "phpVersion": "php80"
+        }
+   ],
+    "total": 2
+}
