@@ -8,12 +8,17 @@ Enhance documentation https://enhance.com/docs/
 ```git clone https://github.com/managingwp/enhance-bash-cli.git```
 2. Create $HOME/.enhance
 '''
-API_TOKEN=<enhanced_token
+API_TOKEN=<enhanced_token>
 API_URL=https://api.example.com
 ORG_ID=<your_org_id>
 '''
 
-# Notes 
+# Notes
+## Organization ID's Explained
+- The organization ID is a unique identifier for your organization within the Enhance platform.
+- There is a main organization ID, which you'll find under "Settings->Access Tokens" https://cp.domain.com/settings/access-tokens
+- When you create a customer, they will have their own organization ID.
+- 
 ## Enhance API Documentation
 https://apidocs.enhance.com/
 ## Accessing the Enhance API
