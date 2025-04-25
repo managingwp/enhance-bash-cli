@@ -241,18 +241,18 @@ function _enhance_org_info() {
 }
 
 # =============================================================================
-# -- _enhance_org_customers $ORG_ID
+# -- _enhance_org_customers $CLUSTER_ORG_ID
 # -- Get customer information
 # =============================================================================
 # shellcheck disable=SC2034
 ebc_functions[_enhance_org_customers]="Get customer information"
 function _enhance_org_customers () {
     _debug "function:${FUNCNAME[0]} - ${*}"
-    local ORG_ID="$1"
-    [[ -z $ORG_ID ]] && { _error "Customer ID required"; return 1; }
+    local CLUSTER_ORG_ID="$1"
+    [[ -z $CLUSTER_ORG_ID ]] && { _error "CLUSTER_ORG_ID required"; return 1; }
     
-    _running "Getting customer information on $ORG_ID"
-    _enhance_api "GET" "/orgs/$ORG_ID/customers"
+    _running "Getting customer information on $CLUSTER_ORG_ID"
+    _enhance_api "GET" "/orgs/$CLUSTER_ORG_ID/customers"
     
     if [[ $CURL_EXIT_CODE == "200" ]]; then
         _parse_api_output "$API_OUTPUT"
