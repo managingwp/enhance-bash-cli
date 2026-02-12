@@ -6,13 +6,38 @@ Enhance documentation https://enhance.com/docs/
 # Installation
 1. Clone the repository
 ```git clone https://github.com/managingwp/enhance-bash-cli.git```
-2. Create $HOME/.enhance
-'''
+2. Create $HOME/.enhance with at least one named profile section:
+```
+[default]
 API_TOKEN=<enhanced_token>
 API_URL=https://api.example.com
-ORG_ID=<your_org_id> # This is the organization for the organization commands
-CLUSTER_ORG_ID=<your_server_org_id> # This is the cluster organization ID for cluster commands
-'''
+ORG_ID=<your_org_id>
+CLUSTER_ORG_ID=<your_server_org_id>
+```
+
+You can add multiple profiles:
+```
+[production]
+API_TOKEN=<prod_token>
+API_URL=https://api.production.example.com
+ORG_ID=<prod_org_id>
+CLUSTER_ORG_ID=<prod_cluster_org_id>
+
+[staging]
+API_TOKEN=<staging_token>
+API_URL=https://api.staging.example.com
+ORG_ID=<staging_org_id>
+CLUSTER_ORG_ID=<staging_cluster_org_id>
+```
+
+## Profile Usage
+- If only one profile exists, it is used automatically.
+- If multiple profiles exist, you will be prompted to select one.
+- Use `--profile <name>` (or `-p <name>`) to skip the prompt:
+  ```
+  ./ebc -c servers --profile production
+  ```
+- If `API_TOKEN` is already set as an environment variable, the config file is skipped entirely.
 
 # Notes
 ## Organization ID's Explained

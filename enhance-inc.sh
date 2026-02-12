@@ -109,32 +109,193 @@ function _pre_flight_check () {
 }
 
 # =====================================
+# -- _parse_profiles
+# -- Parse INI-style profiles from .enhance file
+# -- Populates AVAILABLE_PROFILES array and
+# -- PROFILE_DATA_<name>_<KEY> variables
+# =====================================
+ebc_functions[_parse_profiles]="Parse profiles from .enhance config"
+function _parse_profiles () {
+    local config_file="$HOME/.enhance"
+    AVAILABLE_PROFILES=()
+
+    if [[ ! -f "$config_file" ]]; then
+        _error "Config file not found: $config_file"
+        _error "Create $config_file with at least one profile section. Example:"
+        _error ""
+        _error "  [default]"
+        _error "  API_TOKEN=your_token"
+        _error "  API_URL=https://api.example.com"
+        _error "  ORG_ID=your_org_id"
+        _error "  CLUSTER_ORG_ID=your_cluster_org_id"
+        exit 1
+    fi
+
+    local current_profile=""
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Skip empty lines and comments
+        [[ -z "$line" ]] && continue
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+
+        # Trim leading/trailing whitespace
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+
+        # Check for section header [profile_name]
+        if [[ "$line" =~ ^\[([a-zA-Z0-9_-]+)\]$ ]]; then
+            current_profile="${BASH_REMATCH[1]}"
+            AVAILABLE_PROFILES+=("$current_profile")
+            _debug "Found profile: $current_profile"
+            continue
+        fi
+
+        # Parse key=value lines under a section
+        if [[ -n "$current_profile" ]] && [[ "$line" =~ ^([A-Z_]+)=(.*)$ ]]; then
+            local key="${BASH_REMATCH[1]}"
+            local value="${BASH_REMATCH[2]}"
+            # Store as PROFILE_DATA_<profile>_<key>
+            local var_name="PROFILE_DATA_${current_profile//-/_}_${key}"
+            printf -v "$var_name" '%s' "$value"
+            _debug "Profile $current_profile: $key set"
+        fi
+    done < "$config_file"
+
+    if [[ ${#AVAILABLE_PROFILES[@]} -eq 0 ]]; then
+        _error "No profile sections found in $config_file."
+        _error "Wrap your credentials in a named section. Example:"
+        _error ""
+        _error "  [default]"
+        _error "  API_TOKEN=your_token"
+        _error "  API_URL=https://api.example.com"
+        _error "  ORG_ID=your_org_id"
+        _error "  CLUSTER_ORG_ID=your_cluster_org_id"
+        exit 1
+    fi
+
+    _debug "Available profiles: ${AVAILABLE_PROFILES[*]}"
+}
+
+# =====================================
+# -- _load_profile <profile_name>
+# -- Load a specific profile's variables into globals
+# =====================================
+ebc_functions[_load_profile]="Load a profile's credentials into environment"
+function _load_profile () {
+    local profile_name="$1"
+    local safe_name="${profile_name//-/_}"
+
+    local token_var="PROFILE_DATA_${safe_name}_API_TOKEN"
+    local url_var="PROFILE_DATA_${safe_name}_API_URL"
+    local org_var="PROFILE_DATA_${safe_name}_ORG_ID"
+    local cluster_var="PROFILE_DATA_${safe_name}_CLUSTER_ORG_ID"
+
+    API_TOKEN="${!token_var}"
+    API_URL="${!url_var}"
+
+    # Only set ORG_ID from profile if not already set via CLI (-o/--org-id)
+    if [[ -z "$CLI_ORG_ID" ]]; then
+        ORG_ID="${!org_var}"
+    fi
+    CLUSTER_ORG_ID="${!cluster_var}"
+
+    _debug "Loaded profile: $profile_name"
+}
+
+# =====================================
+# -- _select_profile
+# -- Select and load a profile
+# -- Uses $PROFILE if set, else prompts if multiple exist
+# =====================================
+ebc_functions[_select_profile]="Select and load a profile from .enhance"
+function _select_profile () {
+    _parse_profiles
+
+    # If --profile was specified, validate and load it
+    if [[ -n "$PROFILE" ]]; then
+        local found=0
+        for p in "${AVAILABLE_PROFILES[@]}"; do
+            if [[ "$p" == "$PROFILE" ]]; then
+                found=1
+                break
+            fi
+        done
+        if [[ $found -eq 0 ]]; then
+            _error "Profile '$PROFILE' not found in \$HOME/.enhance"
+            _error "Available profiles: ${AVAILABLE_PROFILES[*]}"
+            exit 1
+        fi
+        _load_profile "$PROFILE"
+        _running2 "Using profile: $PROFILE"
+        return
+    fi
+
+    # If only one profile, auto-select
+    if [[ ${#AVAILABLE_PROFILES[@]} -eq 1 ]]; then
+        PROFILE="${AVAILABLE_PROFILES[0]}"
+        _load_profile "$PROFILE"
+        _running2 "Using profile: $PROFILE"
+        return
+    fi
+
+    # Multiple profiles — prompt user
+    echo ""
+    _running "Select a profile:"
+    echo ""
+    local i=1
+    for p in "${AVAILABLE_PROFILES[@]}"; do
+        printf "  %d) %s\n" "$i" "$p"
+        ((i++))
+    done
+    echo ""
+
+    local selection
+    while true; do
+        read -rp "Enter profile number [1]: " selection
+        selection="${selection:-1}"
+
+        if [[ "$selection" =~ ^[0-9]+$ ]] && (( selection >= 1 && selection <= ${#AVAILABLE_PROFILES[@]} )); then
+            PROFILE="${AVAILABLE_PROFILES[$((selection-1))]}"
+            _load_profile "$PROFILE"
+            _running2 "Using profile: $PROFILE"
+            return
+        else
+            _error "Invalid selection. Enter a number between 1 and ${#AVAILABLE_PROFILES[@]}."
+        fi
+    done
+}
+
+# =====================================
 # -- _check_api_creds
 # -- Check for API credentials
 # =====================================
 function _check_api_creds () {
-    local API_CRED_FILE="$HOME/.enhance"
+    # Save CLI-provided ORG_ID before profile loading can overwrite it
+    if [[ -n "$ORG_ID" ]]; then
+        CLI_ORG_ID="$ORG_ID"
+    fi
 
     if [[ -n $API_TOKEN ]]; then
-        _running "Found \$API_TOKEN via CLI using for authentication/."
-    elif [[ -f "$API_CRED_FILE" ]]; then
-        _debug "Found $API_CRED_FILE file."
-        # shellcheck source=$API_CRED_FILE
-        source "$API_CRED_FILE"
-    
-        if [[ ${API_TOKEN} ]]; then            
-            _debug "Found \$API_TOKEN in $API_CRED_FILE using for authentication."            
-        else
-            _error "API_TOKEN not found in $API_CRED_FILE."
-            exit 1
-        fi
+        _running "Found \$API_TOKEN via environment, using for authentication."
+    else
+        # Load from profile
+        _select_profile
+    fi
+
+    # Validate required credentials
+    if [[ -z $API_TOKEN ]]; then
+        _error "API_TOKEN not set. Check your profile in \$HOME/.enhance."
+        exit 1
     fi
 
     if [[ -z $API_URL ]]; then
-        _error "API_URL not found in $API_CRED_FILE."
+        _error "API_URL not set. Check your profile in \$HOME/.enhance."
         exit 1
     fi
-    
+
+    # Restore CLI ORG_ID if it was set
+    if [[ -n "$CLI_ORG_ID" ]]; then
+        ORG_ID="$CLI_ORG_ID"
+    fi
 }
 
 # =====================================

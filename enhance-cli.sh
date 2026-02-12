@@ -94,6 +94,7 @@ function _help () {
     declare -A usage_option
     usage_option[org_id]="Show this help message and exit"
     usage_option[domain]="Domain name to check"
+    usage_option[profile]="Profile name from ~/.enhance (e.g. --profile production)"
 
         # -- Array for optional arguments
     declare -A optional_args
@@ -183,8 +184,14 @@ ALL_ARGS="$*"
         shift # past argument
         shift # past variable
         ;;
+        -p|--profile)
+        PROFILE="$2"
+        ARG_DEBUG+=(PROFILE)
+        shift # past argument
+        shift # past variable
+        ;;
         -h|--help)
-        _cf_partner_help
+        _help
         exit 0
         ;;
         --quiet)
@@ -229,11 +236,21 @@ _debug "ARG_DEBUG: ${ARG_DEBUG[*]}"
 for ARG in "${ARG_DEBUG[@]}"; do
     _debug "$ARG: ${!ARG}"
 done
-# -- pre-flight check
+
+# -- Handle help/no-command before credential checks
+if [[ -z $CMD ]]; then
+    _help
+    _error "No command specified"
+    exit 1
+elif [[ $CMD == "help" ]]; then
+    _help
+    exit 0
+fi
+
+# -- pre-flight check (only for commands that need credentials)
 _debug "Pre-flight_check"
 _pre_flight_check
 
-[[ -z $CMD ]] && { _help; _error "No command specified"; exit 1; }
 _running "Enhance CLI - $CMD"
 [[ -n $ORG_ID ]] && { _debug "ORG_ID: $ORG_ID"; _running2 "\$ORG_ID specified via .enhance"; }
 
@@ -292,10 +309,6 @@ elif [[ $CMD == "lets-encrypt-pre-flight" ]]; then
     _enhance_lets_encrypt_pre_flight "$@"
 elif [[ $CMD == "lets-encrypt-create" ]]; then    
     _enhance_lets_encrypt_create "$@"
-# -- Help
-elif [[ $CMD == "help" ]]; then
-    _help
-    exit 0
 else     
     _help
     _error "Command not found: $CMD"
