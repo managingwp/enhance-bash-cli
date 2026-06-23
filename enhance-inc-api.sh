@@ -241,25 +241,94 @@ function _enhance_org_info() {
 }
 
 # =============================================================================
-# -- _enhance_org_customers $CLUSTER_ORG_ID
+# -- _enhance_org_customers [--recursive] [--ids] [--max-depth N] $CLUSTER_ORG_ID
 # -- Get customer information
 # =============================================================================
 # shellcheck disable=SC2034
 ebc_functions[_enhance_org_customers]="Get customer information"
 function _enhance_org_customers () {
     _debug "function:${FUNCNAME[0]} - ${*}"
-    local CLUSTER_ORG_ID="$1"
+    
+    local RECURSIVE=false
+    local IDS_ONLY=false
+    local MAX_DEPTH=""
+    local CLUSTER_ORG_ID=""
+    local args=()
+    
+    # Parse flags and positional args
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --recursive)
+                RECURSIVE=true
+                shift
+                ;;
+            --ids)
+                IDS_ONLY=true
+                shift
+                ;;
+            --max-depth=*)
+                MAX_DEPTH="${1#*=}"
+                shift
+                ;;
+            --max-depth)
+                MAX_DEPTH="$2"
+                shift 2
+                ;;
+            *)
+                args+=("$1")
+                shift
+                ;;
+        esac
+    done
+    
+    CLUSTER_ORG_ID="${args[0]}"
     [[ -z $CLUSTER_ORG_ID ]] && { _error "CLUSTER_ORG_ID required"; return 1; }
     
-    _running "Getting customer information on $CLUSTER_ORG_ID"
-    _enhance_api "GET" "/orgs/$CLUSTER_ORG_ID/customers"
+    # Build API path with query parameters
+    local API_PATH="/orgs/$CLUSTER_ORG_ID/customers"
+    local QUERY_PARAMS=""
+    
+    if [[ $RECURSIVE == true ]]; then
+        QUERY_PARAMS="recursive=true"
+    fi
+    
+    if [[ -n $MAX_DEPTH ]]; then
+        if [[ -n $QUERY_PARAMS ]]; then
+            QUERY_PARAMS="${QUERY_PARAMS}&maxDepth=${MAX_DEPTH}"
+        else
+            QUERY_PARAMS="maxDepth=${MAX_DEPTH}"
+        fi
+    fi
+    
+    if [[ -n $QUERY_PARAMS ]]; then
+        API_PATH="${API_PATH}?${QUERY_PARAMS}"
+    fi
+    
+    _running "Getting customer information on $CLUSTER_ORG_ID${RECURSIVE:+ (recursive)}"
+    _enhance_api "GET" "$API_PATH"
     
     if [[ $CURL_EXIT_CODE == "200" ]]; then
-        _parse_api_output "$API_OUTPUT"
+        if [[ $IDS_ONLY == true ]]; then
+            # Extract just the org IDs
+            echo "$API_OUTPUT" | jq -r '.items[].id'
+        else
+            _parse_api_output "$API_OUTPUT"
+        fi
     else
         _error "Error: $CURL_EXIT_CODE"
         _parse_api_error "$API_OUTPUT"
     fi
+}
+
+# =============================================================================
+# -- _enhance_org_customers_ids $CLUSTER_ORG_ID
+# -- Get all customer org IDs (recursive, IDs only)
+# =============================================================================
+# shellcheck disable=SC2034
+ebc_functions[_enhance_org_customers_ids]="Get all customer org IDs (recursive)"
+function _enhance_org_customers_ids () {
+    _debug "function:${FUNCNAME[0]} - ${*}"
+    _enhance_org_customers --recursive --ids "$@"
 }
 
 # ==============================================================================

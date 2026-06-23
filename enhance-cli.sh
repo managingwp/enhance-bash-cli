@@ -41,7 +41,9 @@ ebc_commands_tools[site]="Get site information, either provide domain or domain 
 typeset -gA ebc_commands_org
 ebc_commands_org[org-info]="Get organization information"
 # shellcheck disable=SC2034
-ebc_commands_org[org-customers]="Get organization customers information"
+ebc_commands_org[org-customers]="Get organization customers information|Supports: --recursive, --ids, --max-depth N"
+# shellcheck disable=SC2034
+ebc_commands_org[org-customers-ids]="Get all customer org IDs (recursive, IDs only)"
 
 typeset -gA ebc_commands_plan
 # shellcheck disable=SC2034
@@ -269,6 +271,8 @@ elif [[ $CMD == "org-info" ]]; then
     _enhance_org_info "$ORG_ID"
 elif [[ $CMD == "org-customers" ]]; then
     _enhance_org_customers "$@"
+elif [[ $CMD == "org-customers-ids" ]]; then
+    _enhance_org_customers_ids "$@"
 elif [[ $CMD == "plan-info" ]]; then
     _enhance_plan_info "$@"
 elif [[ $CMD == "websites" ]]; then
