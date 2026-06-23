@@ -10,7 +10,7 @@ Enhance documentation https://enhance.com/docs/
 ```
 [default]
 API_TOKEN=<enhanced_token>
-API_URL=https://api.example.com
+API_URL=https://api.example.com/api
 ORG_ID=<your_org_id>
 CLUSTER_ORG_ID=<your_server_org_id>
 ```
@@ -19,13 +19,13 @@ You can add multiple profiles:
 ```
 [production]
 API_TOKEN=<prod_token>
-API_URL=https://api.production.example.com
+API_URL=https://api.production.example.com/api
 ORG_ID=<prod_org_id>
 CLUSTER_ORG_ID=<prod_cluster_org_id>
 
 [staging]
 API_TOKEN=<staging_token>
-API_URL=https://api.staging.example.com
+API_URL=https://api.staging.example.com/api
 ORG_ID=<staging_org_id>
 CLUSTER_ORG_ID=<staging_cluster_org_id>
 ```
