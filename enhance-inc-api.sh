@@ -467,6 +467,69 @@ function _enhance_org_websites () {
     fi
 }
 
+# =============================================================================
+# -- _enhance_all_websites [--json] [--ids] [$CLUSTER_ORG_ID]
+# -- List all websites and their IDs across all customer orgs (recursive)
+# =============================================================================
+# shellcheck disable=SC2034
+ebc_functions[_enhance_all_websites]="List all websites across all orgs (recursive)"
+function _enhance_all_websites () {
+    _debug "function:${FUNCNAME[0]} - ${*}"
+    
+    local JSON_OUTPUT=false
+    local IDS_ONLY=false
+    local ORG_ID_ARG=""
+    local args=()
+    
+    # Parse flags and positional args
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --json)
+                JSON_OUTPUT=true
+                shift
+                ;;
+            --ids)
+                IDS_ONLY=true
+                shift
+                ;;
+            *)
+                args+=("$1")
+                shift
+                ;;
+        esac
+    done
+    
+    # Use positional arg if provided, otherwise fall back to global CLUSTER_ORG_ID from profile
+    ORG_ID_ARG="${args[0]}"
+    if [[ -n $ORG_ID_ARG ]]; then
+        CLUSTER_ORG_ID="$ORG_ID_ARG"
+    fi
+    [[ -z $CLUSTER_ORG_ID ]] && { _error "CLUSTER_ORG_ID required"; return 1; }
+    
+    _running "Getting all websites recursively from $CLUSTER_ORG_ID"
+    _enhance_api "GET" "/orgs/$CLUSTER_ORG_ID/websites?recursion=infinite"
+    
+    if [[ $CURL_EXIT_CODE == "200" ]]; then
+        if [[ $IDS_ONLY == true ]]; then
+            # Extract just the website IDs
+            echo "$API_OUTPUT" | jq -r '.items[].id'
+        elif [[ $JSON_OUTPUT == true ]]; then
+            # Raw JSON output
+            _parse_api_output "$API_OUTPUT"
+        else
+            # Formatted table: Website ID, Domain, Org Name, Status
+            echo "$API_OUTPUT" | jq -r '
+                ["Website ID","Domain","Org Name","Status"],
+                (.items[] | [.id, .domain.domain, .org, .status])
+                | @tsv
+            ' | column -t -s $'\t'
+        fi
+    else
+        _error "Error: $CURL_EXIT_CODE"
+        _parse_api_error "$API_OUTPUT"
+    fi
+}
+
 # =====================================
 # -- _enhance_org_website_get
 # -- Get website information

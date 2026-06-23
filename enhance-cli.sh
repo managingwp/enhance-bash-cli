@@ -54,6 +54,8 @@ ebc_commands_website[websites]="Get website information"
 ebc_commands_website[website-get]="Get website information"
 # shellcheck disable=SC2034
 ebc_commands_website[website-create]="Create a website"
+# shellcheck disable=SC2034
+ebc_commands_website[all-websites]="List all websites across all orgs (recursive)|Supports: --json, --ids"
 
 
 typeset -gA ebc_commands_subscriptions
@@ -275,6 +277,8 @@ elif [[ $CMD == "org-customers-ids" ]]; then
     _enhance_org_customers_ids "$@"
 elif [[ $CMD == "plan-info" ]]; then
     _enhance_plan_info "$@"
+elif [[ $CMD == "all-websites" ]]; then
+    _enhance_all_websites "$@"
 elif [[ $CMD == "websites" ]]; then
     _enhance_org_websites "$@"
 elif [[ $CMD == "website-get" ]]; then
