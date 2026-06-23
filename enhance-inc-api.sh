@@ -252,7 +252,7 @@ function _enhance_org_customers () {
     local RECURSIVE=false
     local IDS_ONLY=false
     local MAX_DEPTH=""
-    local CLUSTER_ORG_ID=""
+    local ORG_ID_ARG=""
     local args=()
     
     # Parse flags and positional args
@@ -281,7 +281,11 @@ function _enhance_org_customers () {
         esac
     done
     
-    CLUSTER_ORG_ID="${args[0]}"
+    # Use positional arg if provided, otherwise fall back to global CLUSTER_ORG_ID from profile
+    ORG_ID_ARG="${args[0]}"
+    if [[ -n $ORG_ID_ARG ]]; then
+        CLUSTER_ORG_ID="$ORG_ID_ARG"
+    fi
     [[ -z $CLUSTER_ORG_ID ]] && { _error "CLUSTER_ORG_ID required"; return 1; }
     
     # Build API path with query parameters
